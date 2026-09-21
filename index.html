@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Montador de Pedidos</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header>
+  <h1>Montador de <span>Pedidos</span></h1>
+  <p>Importe a tabela do fornecedor e monte o pedido rapidinho</p>
+</header>
+
+<main>
+
+  <!-- ===== ETAPA 1: IMPORTAR ===== -->
+  <section id="etapaImportar" class="etapa">
+    <div class="card" id="pedidoAnteriorCard" style="display:none;">
+      <h2>Pedido em andamento encontrado</h2>
+      <p class="hint" id="pedidoAnteriorInfo"></p>
+      <div class="form-actions">
+        <button type="button" class="btn-primary" id="btnContinuarPedido">Continuar de onde parei</button>
+        <button type="button" class="btn-secondary" id="btnDescartarPedido">Começar do zero</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>1. Importar planilha</h2>
+      <p class="hint">Selecione o arquivo Excel (.xlsx) que o fornecedor mandou. Funciona com a maioria dos formatos — o sistema tenta identificar as colunas sozinho.</p>
+      <input type="file" id="inputArquivo" accept=".xlsx,.xls" />
+      <div class="status" id="importarStatus"></div>
+    </div>
+  </section>
+
+  <!-- ===== ETAPA 2: CONFIRMAR COLUNAS ===== -->
+  <section id="etapaMapeamento" class="etapa" style="display:none;">
+    <div class="card">
+      <h2>2. Confirme as colunas</h2>
+      <p class="hint" id="infoDeteccao"></p>
+
+      <div class="form-grid">
+        <label>Código (opcional)<select id="mapCodigo"></select></label>
+        <label>Produto <span class="obrigatorio">*</span><select id="mapNome"></select></label>
+        <label>Preço final <span class="obrigatorio">*</span><select id="mapPreco"></select></label>
+        <label>Preço de tabela (opcional)<select id="mapPrecoTabela"></select></label>
+        <label>Desconto (opcional)<select id="mapDesconto"></select></label>
+      </div>
+      <p class="hint">Se a planilha não tiver uma coluna de "Preço final" pronta, mas tiver "Preço de tabela" + "Desconto", calculamos sozinhos (tabela − tabela × desconto).</p>
+
+      <h3>Pré-visualização</h3>
+      <div id="previaLinhas" class="previa-tabela"></div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-primary" id="btnConfirmarMapeamento">Confirmar e montar pedido</button>
+        <button type="button" class="btn-secondary" id="btnVoltarImportar">Voltar</button>
+      </div>
+      <div class="status" id="mapeamentoStatus"></div>
+    </div>
+  </section>
+
+  <!-- ===== ETAPA 3: MONTAR PEDIDO ===== -->
+  <section id="etapaPedido" class="etapa" style="display:none;">
+    <div class="card">
+      <div class="card-header">
+        <h2>3. Monte o pedido</h2>
+        <button type="button" class="btn-secondary" id="btnNovaImportacao" style="width:auto; margin:0; padding:8px 14px; font-size:12px;">🔄 Nova planilha</button>
+      </div>
+      <div class="add-row">
+        <input type="text" id="produtoBuscaPedido" autocomplete="off" placeholder="Buscar produto por nome ou código..." />
+      </div>
+      <p class="hint" id="totalProdutosInfo"></p>
+    </div>
+
+    <div class="card">
+      <div id="listaProdutosPedido"></div>
+      <div id="listaProdutosVazia" class="empty" style="display:none;">Nenhum produto encontrado.</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== RESUMO FIXO NO RODAPÉ ===== -->
+<div id="resumoFixo" class="resumo-fixo" style="display:none;">
+  <div class="resumo-fixo-info">
+    <span id="resumoItens">0 itens</span>
+    <b id="resumoTotal">R$ 0,00</b>
+  </div>
+  <button type="button" class="btn-primary" id="btnAbrirResumo">Exportar pedido</button>
+</div>
+
+<!-- ===== MODAL: RESUMO + EXPORTAR ===== -->
+<div id="resumoOverlay" class="scanner-overlay" style="display:none;">
+  <div class="resumo-modal">
+    <h2>Resumo do pedido</h2>
+    <div id="resumoLista" class="resumo-lista"></div>
+    <div class="resumo-total-linha">
+      <span>Total</span>
+      <b id="resumoTotalModal">R$ 0,00</b>
+    </div>
+    <button type="button" class="btn-primary" id="btnExportarXlsx">📊 Baixar planilha (.xlsx)</button>
+    <button type="button" class="btn-primary btn-whats" id="btnAbrirWhatsapp">📤 Abrir no WhatsApp</button>
+    <button type="button" class="btn-primary btn-whats" id="btnCopiarTexto">📋 Copiar texto</button>
+    <div class="status" id="resumoStatusCopia"></div>
+    <button type="button" class="btn-secondary" id="btnFecharResumo">Fechar</button>
+  </div>
+</div>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="js/format.js"></script>
+<script src="js/xlsxImport.js"></script>
+<script src="js/pedido.js"></script>
+<script src="js/exportar.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
