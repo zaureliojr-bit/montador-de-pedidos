@@ -55,6 +55,37 @@ function sugerirColuna(headers, chave){
   return headers.findIndex(h => aliases.includes(normalizarTexto(h)));
 }
 
+// Quando nenhum título de coluna bate com os apelidos de "código" (planilha
+// do fornecedor usa um nome fora do comum, ou nem tem título), tenta achar a
+// coluna do código de barras pelo conteúdo: uma coluna (que não seja a do
+// nome do produto) cujos valores preenchidos são só dígitos, no tamanho
+// típico de EAN/SKU.
+function sugerirColunaCodigoPorConteudo(linhas, linhaCabecalho, indiceNome){
+  const amostra = linhas.slice(linhaCabecalho + 1, linhaCabecalho + 21).filter(l => l && l.length);
+  if(!amostra.length) return -1;
+
+  const numColunas = Math.max(...amostra.map(l => l.length));
+  let melhorIdx = -1;
+  let melhorPontuacao = 0;
+
+  for(let col = 0; col < numColunas; col++){
+    if(col === indiceNome) continue;
+    let acertos = 0;
+    let preenchidos = 0;
+    amostra.forEach(l => {
+      const valor = (l[col] ?? '').toString().trim();
+      if(!valor) return;
+      preenchidos++;
+      if(/^\d{6,14}$/.test(valor)) acertos++;
+    });
+    if(preenchidos > 0 && acertos === preenchidos && acertos > melhorPontuacao){
+      melhorPontuacao = acertos;
+      melhorIdx = col;
+    }
+  }
+  return melhorIdx;
+}
+
 function letraColuna(idx){
   let n = idx;
   let letra = '';
@@ -84,7 +115,8 @@ function construirProdutosDaPlanilha(linhas, linhaCabecalho, mapeamento){
     const nome = mapeamento.nome >= 0 ? (linha[mapeamento.nome] ?? '').toString().trim() : '';
     if(!nome) continue;
 
-    const codigo = mapeamento.codigo >= 0 ? (linha[mapeamento.codigo] ?? '').toString().trim() : '';
+    let codigo = mapeamento.codigo >= 0 ? (linha[mapeamento.codigo] ?? '').toString().trim() : '';
+    if(codigo && codigo === nome) codigo = ''; // coluna de código igual à de produto: não é um código de verdade
 
     let preco = mapeamento.preco >= 0 ? Number(linha[mapeamento.preco]) : NaN;
     if(!Number.isFinite(preco) || preco <= 0){

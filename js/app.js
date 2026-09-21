@@ -46,8 +46,14 @@ async function processarArquivo(arquivo){
     linhaCabecalhoAtual = detectarLinhaCabecalho(linhas);
     const headers = linhas[linhaCabecalhoAtual].map(h => (h ?? '').toString());
 
-    popularSelectColuna(document.getElementById('mapCodigo'), headers, sugerirColuna(headers, 'codigo'));
-    popularSelectColuna(document.getElementById('mapNome'), headers, sugerirColuna(headers, 'nome'));
+    const indiceNomeSugerido = sugerirColuna(headers, 'nome');
+    let indiceCodigoSugerido = sugerirColuna(headers, 'codigo');
+    if(indiceCodigoSugerido < 0){
+      indiceCodigoSugerido = sugerirColunaCodigoPorConteudo(linhas, linhaCabecalhoAtual, indiceNomeSugerido);
+    }
+
+    popularSelectColuna(document.getElementById('mapCodigo'), headers, indiceCodigoSugerido);
+    popularSelectColuna(document.getElementById('mapNome'), headers, indiceNomeSugerido);
     popularSelectColuna(document.getElementById('mapPreco'), headers, sugerirColuna(headers, 'preco'));
     popularSelectColuna(document.getElementById('mapPrecoTabela'), headers, sugerirColuna(headers, 'precoTabela'));
     popularSelectColuna(document.getElementById('mapDesconto'), headers, sugerirColuna(headers, 'desconto'));
@@ -89,6 +95,11 @@ function confirmarMapeamento(){
   if(mapeamento.preco < 0 && (mapeamento.precoTabela < 0 || mapeamento.desconto < 0)){
     status.classList.add('erro');
     status.textContent = 'Selecione a coluna de preço final, ou preço de tabela + desconto pra calcular sozinho.';
+    return;
+  }
+  if(mapeamento.codigo >= 0 && mapeamento.codigo === mapeamento.nome){
+    status.classList.add('erro');
+    status.textContent = 'A coluna de Código não pode ser a mesma do Produto. Selecione a coluna certa (ou deixe "Nenhuma" se a planilha não tiver código de barras).';
     return;
   }
 

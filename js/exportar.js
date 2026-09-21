@@ -7,7 +7,7 @@ function gerarTextoPedido(){
 
   let texto = `*Pedido*\n${new Date().toLocaleDateString('pt-BR')}\n\n`;
   itens.forEach(p => {
-    texto += `${p.qtd}x ${p.nome}${p.codigo ? ' (' + p.codigo + ')' : ''} — ${formatarMoeda(p.preco)} = ${formatarMoeda(p.qtd * p.preco)}\n`;
+    texto += `${p.qtd}x ${p.nome}${p.codigo ? ' [Cód: ' + p.codigo + ']' : ''} — ${formatarMoeda(p.preco)} = ${formatarMoeda(p.qtd * p.preco)}\n`;
   });
   texto += `\n*Total: ${formatarMoeda(total)}*`;
   return texto;
